@@ -1,0 +1,25 @@
+Model:
+  name: GAN
+  latent_size: 100
+  Discriminator:
+    output_channel: 256
+  
+Data:
+  dataset: 'CIFAR10'
+  batch_size: 256
+  image_shape: [3, 32, 32]
+
+Optimizer:
+  name: Adam
+  lr: 0.0002
+  beta1: 0.5
+  beta2: 0.999
+
+device: 'cpu'
+epochs: 500
+log_interval_step: 100
+save_interval_epoch: 20
+
+data_path: 'data'
+save_image_path: 'saved_images'
+save_model_path: 'saved_models'
