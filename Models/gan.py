@@ -6,6 +6,8 @@ import numpy as np
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
+from Models.basemodel import BaseModel
+
 class Discriminator(nn.Module):
     def __init__(self, input_channel, output_channel) -> None:
         super(Discriminator, self).__init__()
@@ -51,7 +53,7 @@ class Generator(nn.Module):
         return x.reshape(batch , *self.image_shape)
     
 
-class GenerativeAdversarialNetworks(nn.Module):
+class GenerativeAdversarialNetworks(BaseModel):
     def __init__(self, cfg) -> None:
         super(GenerativeAdversarialNetworks, self).__init__()
 
