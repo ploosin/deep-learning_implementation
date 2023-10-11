@@ -8,65 +8,71 @@ from matplotlib import pyplot as plt
 
 from Models.basemodel import BaseModel
 
+
 class Generator(nn.Module):
-    def __init__(self, image_shape, input_channel, output_channel) -> None:
+    def __init__(self, latent_size, feature_channel, output_channel):
         super(Generator, self).__init__()
-        
-        self.image_shape = image_shape
+
         self.model = nn.Sequential(
-            *self.block(input_channel, 128, batch_norm=False),
-            *self.block(128, 256),
-            *self.block(256, 512),
-            *self.block(512, 1024),
-            nn.Linear(1024, output_channel),
+            nn.ConvTranspose2d(latent_size, feature_channel * 8, 4, 1, 0, bias=False),          # [B x feature_channel*8 x 4 x 4]
+            nn.BatchNorm2d(feature_channel * 8),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(feature_channel * 8, feature_channel * 4, 4, 2, 1, bias=False),  # [B x feature_channel*4 x 8 x 8]
+            nn.BatchNorm2d(feature_channel * 4),
+            nn.ReLU(True),
+            nn.ConvTranspose2d( feature_channel * 4, feature_channel * 2, 4, 2, 1, bias=False), # [B x feature_channel*2 x 16 x 16]
+            nn.BatchNorm2d(feature_channel * 2),
+            nn.ReLU(True),
+            nn.ConvTranspose2d( feature_channel * 2, feature_channel, 4, 2, 1, bias=False),     # [B x feature_channel*1 x 32 x 32]
+            nn.BatchNorm2d(feature_channel),
+            nn.ReLU(True),
+            nn.ConvTranspose2d( feature_channel, output_channel, 4, 2, 1, bias=False),          # [B x output_channel x 64 x 64]
             nn.Tanh()
+            # 위의 계층을 통과한 데이터의 크기. ``(nc) x 64 x 64``
         )
 
-    def block(self, input_channel, output_channel, batch_norm=True):
-        layers = [nn.Linear(input_channel, output_channel)]
-        if batch_norm:
-            layers.append(nn.BatchNorm1d(output_channel))
-        layers.append(nn.LeakyReLU(0.2, inplace=True))
-        return layers
-    
-    def forward(self, x):
-        batch = x.shape[0]
-        x = self.model(x)
-        return x.reshape(batch , *self.image_shape)
+    def forward(self, input):
+        return self.model(input)
+
 
 class Discriminator(nn.Module):
-    def __init__(self, input_channel, output_channel) -> None:
+    def __init__(self, input_channel, feature_channel):
         super(Discriminator, self).__init__()
-
-        self.model = nn.Sequential(
-            nn.Linear(input_channel, output_channel*2),
+        
+        self.model = nn.Sequential(                                                     # input : [B x input_channel x 64 x 64]
+            nn.Conv2d(input_channel, feature_channel, 4, 2, 1, bias=False),             # [B x feature_channel*1 x 32 x 32]
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(output_channel*2, output_channel),
+            nn.Conv2d(feature_channel, feature_channel * 2, 4, 2, 1, bias=False),       # [B x feature_channel*2 x 16 x 16]
+            nn.BatchNorm2d(feature_channel * 2),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(output_channel, 1),
+            nn.Conv2d(feature_channel * 2, feature_channel * 4, 4, 2, 1, bias=False),   # [B x feature_channel*4 x 8 x 8]
+            nn.BatchNorm2d(feature_channel * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(feature_channel * 4, feature_channel * 8, 4, 2, 1, bias=False),   # [B x feature_channel*8 x 4 x 4]
+            nn.BatchNorm2d(feature_channel * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(feature_channel * 8, 1, 4, 1, 0, bias=False),                     # [B x 1]
             nn.Sigmoid()
         )
-    
-    def forward(self, img):
-        batch = img.shape[0]
-        x = img.reshape(batch, -1)
-        return self.model(x)
+
+    def forward(self, input):
+        return self.model(input)
     
 
-class GenerativeAdversarialNetworks(BaseModel):
+class DeConvolutionGenerativeAdversarialNetworks(BaseModel):
     def __init__(self, cfg) -> None:
-        super(GenerativeAdversarialNetworks, self).__init__()
+        super(DeConvolutionGenerativeAdversarialNetworks, self).__init__()
 
         self.cfg          = cfg
         self.device       = cfg.device
-        self.image_shape  = cfg.Data.image_shape
 
-        self.image_flatten_channel  = int(np.prod(self.image_shape))
-        self.output_dis_channel     = cfg.Model.Discriminator.output_channel
-        self.latent_size            = cfg.Model.latent_size
+        self.image_channel  = cfg.Data.image_shape[0]
+        self.latent_size  = cfg.Model.latent_size
+        self.gfc = cfg.Model.Generator.feature_channel
+        self.dfc = cfg.Model.Discriminator.feature_channel
 
-        self.generator    = Generator(self.image_shape, self.latent_size, self.image_flatten_channel).to(self.device)
-        self.disriminator = Discriminator(self.image_flatten_channel, self.output_dis_channel).to(self.device)
+        self.generator    = Generator(self.latent_size, self.gfc, self.image_channel).to(self.device)
+        self.disriminator = Discriminator(self.image_channel, self.dfc).to(self.device)
 
         self.set_loss()        
         self.set_optimizer()
@@ -86,7 +92,7 @@ class GenerativeAdversarialNetworks(BaseModel):
         self.save_model_dir = os.path.join(self.cfg.save_model_path, self.cfg.Model.name, self.cfg.Data.dataset)
         os.makedirs(self.save_image_dir, exist_ok=True)
         os.makedirs(self.save_model_dir, exist_ok=True)
-        
+
     def train(self, data_loader):
         g_losses = []
         d_losses = []
@@ -97,25 +103,25 @@ class GenerativeAdversarialNetworks(BaseModel):
 
                 # fake image label: 0  real image label: 1 in Discriminator
                 # fake image label: 1                      in Generator
-                real_label = torch.ones( (batch, 1), device=self.device)
-                fake_label = torch.zeros((batch, 1), device=self.device)
+                real_label = torch.ones( (batch,), device=self.device)
+                fake_label = torch.zeros((batch,), device=self.device)
 
                 # Train Discriminator
                 # Gaussian random noise
-                noise = torch.randn((batch, self.latent_size), device=self.device)
+                noise = torch.randn((batch, self.latent_size, 1, 1), device=self.device)
                 gen_img = self.generator(noise)
-                real_loss = self.criterion(self.disriminator(real_img),         real_label)
-                fake_loss = self.criterion(self.disriminator(gen_img.detach()), fake_label)
-                d_loss    = (real_loss + fake_loss) * 0.5
+                real_loss = self.criterion(self.disriminator(real_img).view(-1),         real_label)
+                fake_loss = self.criterion(self.disriminator(gen_img.detach()).view(-1), fake_label)
+                d_loss    = real_loss + fake_loss
 
                 self.d_optimizer.zero_grad()
                 d_loss.backward()
                 self.d_optimizer.step()
 
                 # Train Generator
-                noise   = torch.randn((batch, self.latent_size), device=self.device)
+                noise = torch.randn((batch, self.latent_size, 1, 1), device=self.device)
                 gen_img = self.generator(noise)
-                g_loss  = self.criterion(self.disriminator(gen_img), real_label)
+                g_loss  = self.criterion(self.disriminator(gen_img).view(-1), real_label)
 
                 self.g_optimizer.zero_grad()
                 g_loss.backward()

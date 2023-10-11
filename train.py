@@ -3,11 +3,12 @@ from easydict import EasyDict
 
 from Dataset.dataloader import BasicDataset
 from Models.gan import GenerativeAdversarialNetworks
+from Models.dcgan import DeConvolutionGenerativeAdversarialNetworks
 
 import torch
 
 def main():
-    cfg = yaml.load(open('configs/gan_cifar.yml', 'rb'), Loader=yaml.Loader)
+    cfg = yaml.load(open('configs/dcgan_cifar.yml', 'rb'), Loader=yaml.Loader)
     cfg = EasyDict(cfg)
 
     # 1. Device
@@ -20,7 +21,7 @@ def main():
     train_loader, _ = dataset.train_loader, dataset.test_loader
 
     # 3. Model
-    model = GenerativeAdversarialNetworks(cfg)
+    model = DeConvolutionGenerativeAdversarialNetworks(cfg)
     model.train(train_loader)
 
 main()
