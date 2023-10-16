@@ -2,8 +2,9 @@ import yaml
 from easydict import EasyDict
 
 from Dataset.dataloader import BasicDataset
-from Models.gan import GenerativeAdversarialNetworks
-from Models.dcgan import DeConvolutionGenerativeAdversarialNetworks
+from Dataset.processing import set_image_processing, style_transfer_process
+from Models.GAN.gan import GenerativeAdversarialNetworks
+from Models.GAN.dcgan import DeConvolutionGenerativeAdversarialNetworks
 
 import torch
 
@@ -15,6 +16,9 @@ def main():
     if (torch.cuda.is_available()):
         cfg.device = torch.device('cuda')
         torch.cuda.set_per_process_memory_fraction(0.7)
+
+    # 2. PreProcessing
+    style_transfer_process(cfg)
 
     # 2. DataLoader
     dataset = BasicDataset(cfg)

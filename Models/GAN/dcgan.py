@@ -130,7 +130,7 @@ class DeConvolutionGenerativeAdversarialNetworks(BaseModel):
                 if (step+1) % self.cfg.log_interval_step == 0:
                     d_losses.append(d_loss.item())
                     g_losses.append(g_loss.item())
-                    print(f'Epoch [{epoch+1}/{self.cfg.epochs}]  Batch [{step+1}/{len(data_loader)}]  Discriminator loss: {d_loss.item():7.4f}  Generator loss: {g_loss.item():7.4f}')
+                    self.print(f'Epoch [{epoch+1}/{self.cfg.epochs}]  Batch [{step+1}/{len(data_loader)}]  Discriminator loss: {d_loss.item():7.4f}  Generator loss: {g_loss.item():7.4f}')
 
             if (epoch+1) % self.cfg.save_interval_epoch == 0:
                 save_image        = self.cfg.denormalize(gen_img)

@@ -1,0 +1,24 @@
+Model:
+  name: StyleTransfer
+  
+Data:
+  content_img: data/StyleTransfer/mountain.jpg
+  style_img: data/StyleTransfer/muk.jpg
+  image_shape: [3, 512, 512]
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std:  [0.229, 0.224, 0.225]
+
+Optimizer:
+  name: Adam
+  lr: 0.01
+  style_loss_weight: 100
+
+device: 'cpu'
+epochs: 3000
+log_interval_step: 100
+save_interval_epoch: 100
+
+data_path: 'data'
+save_image_path: 'saved_images'
+save_model_path: 'saved_models'

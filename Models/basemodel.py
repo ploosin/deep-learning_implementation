@@ -5,15 +5,16 @@ import time
 
 from utils.tqdm_logger import TqdmLoggingHandler
 
+
 class BaseModel(nn.Module, metaclass=ABCMeta):
     
     @abstractmethod
     def __init__(self) -> None:
         super(BaseModel, self).__init__()
-        log = logging.getLogger(__name__)
-        log.handlers = []
-        log.setLevel(logging.INFO)
-        log.addHandler(TqdmLoggingHandler())
+        self.log = logging.getLogger(__name__)
+        self.log.handlers = []
+        self.log.setLevel(logging.INFO)
+        self.log.addHandler(TqdmLoggingHandler())
 
     @abstractmethod
     def set_loss(self) -> None:
@@ -31,3 +32,5 @@ class BaseModel(nn.Module, metaclass=ABCMeta):
     def train(self) -> None:
         raise NotImplementedError
     
+    def print(self, s):
+        self.log.info(s)

@@ -1,7 +1,7 @@
 import os
+import torch
 from torchvision import datasets
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
 
 class BasicDataset(Dataset):
     def __init__(self, cfg) -> None:
@@ -9,14 +9,6 @@ class BasicDataset(Dataset):
         
         train_data_path = os.path.join(cfg.data_path, cfg.Data.dataset, 'train')
         test_data_path  = os.path.join(cfg.data_path, cfg.Data.dataset, 'test')
-        cfg.denormalize = lambda x: x*0.5+0.5
-        cfg.normalize = transforms.Compose(
-            [
-                transforms.Resize((cfg.Data.image_shape[1], cfg.Data.image_shape[2])),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.5], std=[0.5])
-            ]
-        )
 
         if   cfg.Data.dataset == 'MNIST':
             train_dataset = datasets.MNIST(
