@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import torch.nn as nn
 import logging
-import time
 
 from utils.tqdm_logger import TqdmLoggingHandler
 

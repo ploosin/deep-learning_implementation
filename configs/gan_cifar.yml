@@ -8,6 +8,9 @@ Data:
   dataset: 'CIFAR10'
   batch_size: 256
   image_shape: [3, 32, 32]
+  normalize:
+    mean: [0.5]
+    std:  [0.5]
 
 Optimizer:
   name: Adam

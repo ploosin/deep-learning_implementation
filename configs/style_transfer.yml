@@ -2,8 +2,9 @@ Model:
   name: StyleTransfer
   
 Data:
-  content_img: data/StyleTransfer/mountain.jpg
-  style_img: data/StyleTransfer/muk.jpg
+  dataset: ''
+  content_img: data/StyleTransfer/sky.jpg
+  style_img: data/StyleTransfer/vangogh.jpg
   image_shape: [3, 512, 512]
   normalize:
     mean: [0.485, 0.456, 0.406]
@@ -16,7 +17,7 @@ Optimizer:
 
 device: 'cpu'
 epochs: 3000
-log_interval_step: 100
+log_interval_epoch: 100
 save_interval_epoch: 100
 
 data_path: 'data'
