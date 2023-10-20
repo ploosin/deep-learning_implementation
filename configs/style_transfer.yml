@@ -4,7 +4,7 @@ Model:
 Data:
   dataset: ''
   content_img: data/StyleTransfer/sky.jpg
-  style_img: data/StyleTransfer/vangogh.jpg
+  style_img: data/StyleTransfer/monet.jpg
   image_shape: [3, 512, 512]
   normalize:
     mean: [0.485, 0.456, 0.406]
@@ -15,7 +15,6 @@ Optimizer:
   lr: 0.01
   style_loss_weight: 100
 
-device: 'cpu'
 epochs: 3000
 log_interval_epoch: 100
 save_interval_epoch: 100

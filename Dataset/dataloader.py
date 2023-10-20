@@ -1,9 +1,10 @@
 import os
+from PIL import Image
 import torch
 from torchvision import datasets
 from torch.utils.data import Dataset, DataLoader
 
-class BasicDataset(Dataset):
+class BasicLoader(Dataset):
     def __init__(self, cfg) -> None:
         super().__init__()
         
@@ -36,10 +37,46 @@ class BasicDataset(Dataset):
                 download=False,
                 transform=cfg.normalize,
             )
+        elif cfg.Model.name == 'Pix2Pix':
+            train_dataset = Pix2PixDataset(cfg, True)
+            test_dataset  = Pix2PixDataset(cfg, False)
     
         self.train_loader = DataLoader(train_dataset,
                                         batch_size=cfg.Data.batch_size,
-                                        shuffle=True)
+                                        shuffle=True,
+                                        num_workers=4)
         self.test_loader = DataLoader(test_dataset,
                                         batch_size=cfg.Data.batch_size,
-                                        shuffle=False)
+                                        shuffle=False,
+                                        num_workers=4)
+
+class Pix2PixDataset(Dataset):
+    def __init__(self, cfg, train) -> None:
+        super(Pix2PixDataset, self).__init__()
+
+        self.cfg       = cfg
+        self.direction = cfg.Data.direction     # a2b or b2a
+        if train:
+            self.a_path    = cfg.Data.train.a_directory
+            self.b_path    = cfg.Data.train.b_directory
+        else:
+            self.a_path    = cfg.Data.test.a_directory
+            self.b_path    = cfg.Data.test.b_directory
+        self.img_filenames = [x for x in os.listdir(self.a_path)]
+
+    def __getitem__(self, index):
+        a = Image.open(os.path.join(self.a_path, self.img_filenames[index])).convert('RGB')
+        b = Image.open(os.path.join(self.b_path, self.img_filenames[index])).convert('RGB')
+
+        a = self.cfg.normalize(a)
+        b = self.cfg.normalize(b)
+
+        if self.direction == 'a2b':
+            return a, b
+        else:
+            return b, a
+
+    def __len__(self):
+        return len(self.img_filenames)
+    
+    

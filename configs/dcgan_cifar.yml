@@ -20,7 +20,6 @@ Optimizer:
   beta1: 0.5
   beta2: 0.999
 
-device: 'cpu'
 epochs: 300
 log_interval_step: 100
 save_interval_epoch: 20
