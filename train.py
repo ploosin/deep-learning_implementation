@@ -7,12 +7,13 @@ from Dataset.processing import set_image_processing
 from Models.GAN.gan import GenerativeAdversarialNetworks
 from Models.GAN.dcgan import DeConvolutionGenerativeAdversarialNetworks
 from Models.StyleTransfer.styletransfer import StyleTransfer
+from Models.ImageToTranslation.pix2pix import Pix2Pix
 
 import torch
 
 def main():
     parser = argparse.ArgumentParser(prog='DeepLearningTrainer')
-    parser.add_argument('-c', '--cfg', type=str, default='configs/style_transfer.yml')
+    parser.add_argument('-c', '--cfg', type=str, default='configs/pix2pix_facades.yml')
     args = parser.parse_args()
 
     cfg = yaml.load(open(args.cfg, 'rb'), Loader=yaml.Loader)
@@ -36,7 +37,8 @@ def main():
         train_loader = None
 
     # 3. Model
-    model = StyleTransfer(cfg)
+    model = Pix2Pix(cfg)
+    # model = torch.compile(model)
     model.train(train_loader)
 
 main()

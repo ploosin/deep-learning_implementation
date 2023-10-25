@@ -1,0 +1,30 @@
+Model:
+  name: Pix2Pix
+  
+Data:
+  dataset: ''
+  batch_size: 1
+  train:
+    a_directory: data/facades/train/a
+    b_directory: data/facades/train/b
+  test:
+    a_directory: data/facades/test/a
+    b_directory: data/facades/test/b
+  image_shape: [3, 256, 256]
+  normalize:
+    mean: [0.5, 0.5, 0.5]
+    std:  [0.5, 0.5, 0.5]
+
+Optimizer:
+  name: Adam
+  lr: 0.0002
+  beta1: 0.5
+  beta2: 0.999
+
+epochs: 100
+log_interval_step: 200
+save_interval_epoch: 10
+
+data_path: 'data'
+save_image_path: 'saved_images'
+save_model_path: 'saved_models'
