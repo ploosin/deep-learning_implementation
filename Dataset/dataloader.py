@@ -43,12 +43,12 @@ class BasicLoader(Dataset):
     
         self.train_loader = DataLoader(train_dataset,
                                         batch_size=cfg.Data.batch_size,
-                                        shuffle=True,
-                                        num_workers=4)
+                                        num_workers=cfg.Data.num_workers,
+                                        shuffle=True)
         self.test_loader = DataLoader(test_dataset,
                                         batch_size=cfg.Data.batch_size,
-                                        shuffle=False,
-                                        num_workers=4)
+                                        num_workers=cfg.Data.num_workers,
+                                        shuffle=False)
 
 class Pix2PixDataset(Dataset):
     def __init__(self, cfg, train) -> None:
@@ -56,6 +56,7 @@ class Pix2PixDataset(Dataset):
 
         self.cfg       = cfg
         self.direction = cfg.Data.direction     # a2b or b2a
+        self.normalize = cfg.normalize
         if train:
             self.a_path    = cfg.Data.train.a_directory
             self.b_path    = cfg.Data.train.b_directory
@@ -68,8 +69,8 @@ class Pix2PixDataset(Dataset):
         a = Image.open(os.path.join(self.a_path, self.img_filenames[index])).convert('RGB')
         b = Image.open(os.path.join(self.b_path, self.img_filenames[index])).convert('RGB')
 
-        a = self.cfg.normalize(a)
-        b = self.cfg.normalize(b)
+        a = self.normalize(a)
+        b = self.normalize(b)
 
         if self.direction == 'a2b':
             return a, b

@@ -63,11 +63,11 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
         
-        self.conv1 = ConvLayer(6,    64, 4, 2, batch_norm=False, activation='lrelu')       
-        self.conv2 = ConvLayer(64,  128, 4, 2, batch_norm=True,  activation='lrelu')       
-        self.conv3 = ConvLayer(128, 256, 4, 2, batch_norm=True,  activation='lrelu')       
-        self.conv4 = ConvLayer(256, 512, 4, 1, batch_norm=True,  activation='lrelu')     
-        self.conv5 = ConvLayer(512,   1, 4, 1, batch_norm=True,  activation='lrelu')   
+        self.conv1 = ConvLayer(6,    64, 4, 2, batch_norm=False, activation='lrelu')        # [B,  64, 128, 128]
+        self.conv2 = ConvLayer(64,  128, 4, 2, batch_norm=True,  activation='lrelu')        # [B, 128,  64,  64]
+        self.conv3 = ConvLayer(128, 256, 4, 2, batch_norm=True,  activation='lrelu')        # [B, 256,  32,  32]
+        self.conv4 = ConvLayer(256, 512, 4, 1, batch_norm=True,  activation='lrelu')        # [B, 512,  31,  31]
+        self.conv5 = ConvLayer(512,   1, 4, 1, batch_norm=True,  activation='')             # [B,   1,  30,  30]
 
     def forward(self, x):
         x = self.conv1(x)
@@ -121,9 +121,9 @@ class Pix2Pix(BaseModel):
 
                 # Train Discriminator
                 # fake
-                fake_b      = self.generator(real_a)
-                fake_ab     = torch.cat([real_a, fake_b], dim=1)
-                pred_fake   = self.discriminator(fake_ab.detach())
+                fake_b      = self.generator(real_a)                    # [B, 3, 256, 256]
+                fake_ab     = torch.cat([real_a, fake_b], dim=1)        # [B, 6, 256, 256]
+                pred_fake   = self.discriminator(fake_ab.detach())      # [B, 1,  30,  30]
                 loss_d_fake = self.MSE_loss(pred_fake, fake_label)
 
                 # real

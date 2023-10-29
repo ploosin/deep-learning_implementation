@@ -2,8 +2,10 @@ Model:
   name: Pix2Pix
   
 Data:
-  dataset: ''
+  dataset: 'facades'
   batch_size: 1
+  direction: 'b2a'
+  num_workers: 0
   train:
     a_directory: data/facades/train/a
     b_directory: data/facades/train/b
