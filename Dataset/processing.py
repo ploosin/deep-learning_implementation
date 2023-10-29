@@ -10,13 +10,17 @@ def set_image_processing(cfg):
     else:
         cfg.denormalize = lambda x: x*cfg.Data.normalize.std + cfg.Data.normalize.mean
 
-    cfg.normalize = transforms.Compose(
-        [
-            transforms.Resize((cfg.Data.image_shape[1], cfg.Data.image_shape[2])),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=cfg.Data.normalize.mean, std=cfg.Data.normalize.std)
-        ]
-    )
+    compose_list = []
+    if 'RandomHorizontalFlip' in cfg.Data.normalize.augmentation:
+        compose_list.append(transforms.RandomHorizontalFlip())
+    if 'CenterCrop' in cfg.Data.normalize.augmentation:
+        compose_list.append(transforms.CenterCrop(cfg.Data.normalize.crop_size))
+
+    compose_list.append(transforms.Resize(cfg.Data.image_shape[1], cfg.Data.image_shape[2]))
+    compose_list.append(transforms.ToTensor())
+    compose_list.append(transforms.Normalize(mean=cfg.Data.normalize.mean, std=cfg.Data.normalize.std))
+
+    cfg.normalize = transforms.Compose(compose_list)
 
 def style_transfer_process(image_path, transform=None, device='cpu'):
     image = Image.open(image_path)

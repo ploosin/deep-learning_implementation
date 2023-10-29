@@ -26,14 +26,14 @@ class Generator(nn.Module):
         self.conv8 = ConvLayer(512, 512, 4, 2, batch_norm=False, activation='lrelu')        # [B, 512,   1,   1]
 
         # Decoder
-        self.deconv1 = DeConvLayer(512,  512, 4, 2, batch_norm=True,  activation='relu')    # [B, 512,   2,   2]
-        self.deconv2 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu')    # [B, 512,   4,   4]
-        self.deconv3 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu')    # [B, 512,   8,   8]
-        self.deconv4 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu')    # [B, 512,  16,  16]
-        self.deconv5 = DeConvLayer(1024, 256, 4, 2, batch_norm=True,  activation='relu')    # [B, 256,  32,  32]
-        self.deconv6 = DeConvLayer(512,  128, 4, 2, batch_norm=True,  activation='relu')    # [B, 128,  64,  64]
-        self.deconv7 = DeConvLayer(256,  64,  4, 2, batch_norm=True,  activation='relu')    # [B,  64, 128, 128]
-        self.deconv8 = DeConvLayer(128,  3,   4, 2, batch_norm=True,  activation='tanh')    # [B,   3, 256, 256]
+        self.deconv1 = DeConvLayer(512,  512, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 512,   2,   2]
+        self.deconv2 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 512,   4,   4]
+        self.deconv3 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 512,   8,   8]
+        self.deconv4 = DeConvLayer(1024, 512, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 512,  16,  16]
+        self.deconv5 = DeConvLayer(1024, 256, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 256,  32,  32]
+        self.deconv6 = DeConvLayer(512,  128, 4, 2, batch_norm=True,  activation='relu', bias=False)    # [B, 128,  64,  64]
+        self.deconv7 = DeConvLayer(256,  64,  4, 2, batch_norm=True,  activation='relu', bias=False)    # [B,  64, 128, 128]
+        self.deconv8 = DeConvLayer(128,  3,   4, 2, batch_norm=True,  activation='tanh', bias=False)    # [B,   3, 256, 256]
 
 
     def forward(self, x, train=True):

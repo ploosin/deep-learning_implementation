@@ -1,0 +1,30 @@
+Model:
+  name: StarGANv1
+  
+Data:
+  dataset: 'celeba'
+  batch_size: 1
+  num_workers: 4
+  image_dir: data/celeba/image_alingn_celeba
+  attr_path: data/celeba/list_attr_celeba.csv
+  selected_attrs: ['Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Male', 'Young']
+  image_shape: [3, 128, 128]
+  normalize:
+    augmentation: ['RandomHorizontalFlip', 'CenterCrop']
+    crop_size: 178
+    mean: [0.5, 0.5, 0.5]
+    std:  [0.5, 0.5, 0.5]
+
+Optimizer:
+  name: Adam
+  lr: 0.0002
+  beta1: 0.5
+  beta2: 0.999
+
+epochs: 100
+log_interval_step: 200
+save_interval_epoch: 10
+
+data_path: 'data'
+save_image_path: 'saved_images'
+save_model_path: 'saved_models'

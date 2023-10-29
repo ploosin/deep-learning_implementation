@@ -2,13 +2,16 @@ import torch
 import torch.nn as nn
 
 class ConvLayer(nn.Module):
-    def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, activation='') -> None:
+    def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, instance_norm=False, activation='', bias=True) -> None:
         super(ConvLayer, self).__init__()
 
         layers = []
-        layers.append(nn.Conv2d(input_channel, output_channel, kernel_size, stride, padding))
+        layers.append(nn.Conv2d(input_channel, output_channel, kernel_size, stride, padding, bias=bias))
         if batch_norm:
             layers.append(nn.BatchNorm2d(output_channel))
+        elif instance_norm:
+            layers.append(nn.InstanceNorm2d(output_channel, affine=True, track_running_stats=True))
+
         if   activation == 'relu':
             layers.append(nn.ReLU6())
         elif activation == 'lrelu':
@@ -27,13 +30,16 @@ class ConvLayer(nn.Module):
     
 
 class DeConvLayer(nn.Module):
-    def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, activation='') -> None:
+    def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, instance_norm=False, activation='', bias=True) -> None:
         super(DeConvLayer, self).__init__()
 
         layers = []
-        layers.append(nn.ConvTranspose2d(input_channel, output_channel, kernel_size, stride, padding, bias=False))
+        layers.append(nn.ConvTranspose2d(input_channel, output_channel, kernel_size, stride, padding, bias=bias))
         if batch_norm:
             layers.append(nn.BatchNorm2d(output_channel))
+        elif instance_norm:
+            layers.append(nn.InstanceNorm2d(output_channel, affine=True, track_running_stats=True))
+        
         if   activation == 'relu':
             layers.append(nn.ReLU6())
         elif activation == 'lrelu':
@@ -49,3 +55,14 @@ class DeConvLayer(nn.Module):
 
     def forward(self, x):
         return self.layer(x)
+    
+
+class ResidualBlock(nn.Module):
+    def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, instance_norm=False, activation='', bias=True) -> None:
+        super(ConvLayer, self).__init__()
+
+        self.layers = ConvLayer(  input_channel,  output_channel, kernel_size, stride, padding, batch_norm, instance_norm, activation, bias=bias) + \
+                        ConvLayer(output_channel, output_channel, kernel_size, stride, padding, batch_norm, instance_norm, bias=bias)
+        
+    def forward(self, x):
+        return x + self.layers(x)
