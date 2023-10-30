@@ -8,12 +8,13 @@ from Models.GAN.gan import GenerativeAdversarialNetworks
 from Models.GAN.dcgan import DeConvolutionGenerativeAdversarialNetworks
 from Models.StyleTransfer.styletransfer import StyleTransfer
 from Models.ImageToTranslation.pix2pix import Pix2Pix
+from Models.ImageToTranslation.starganv1 import StarGANv1
 
 import torch
 
 def main():
     parser = argparse.ArgumentParser(prog='DeepLearningTrainer')
-    parser.add_argument('-c', '--cfg', type=str, default='configs/pix2pix_facades.yml')
+    parser.add_argument('-c', '--cfg', type=str, default='configs/starganv1_celeba.yml')
     args = parser.parse_args()
 
     cfg = yaml.load(open(args.cfg, 'rb'), Loader=yaml.Loader)
@@ -37,7 +38,7 @@ def main():
         train_loader = None
 
     # 3. Model
-    model = Pix2Pix(cfg)
+    model = StarGANv1(cfg)
     # model = torch.compile(model)
     model.train(train_loader)
 

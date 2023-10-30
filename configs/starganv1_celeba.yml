@@ -21,9 +21,9 @@ Optimizer:
   beta1: 0.5
   beta2: 0.999
 
-epochs: 100
+iteration: 20000
 log_interval_step: 200
-save_interval_epoch: 10
+save_interval_step: 10000
 
 data_path: 'data'
 save_image_path: 'saved_images'
