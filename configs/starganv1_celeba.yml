@@ -4,8 +4,8 @@ Model:
 Data:
   dataset: 'celeba'
   batch_size: 1
-  num_workers: 4
-  image_dir: data/celeba/image_alingn_celeba
+  num_workers: 0
+  image_dir: data/celeba/img_align_celeba
   attr_path: data/celeba/list_attr_celeba.csv
   selected_attrs: ['Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Male', 'Young']
   image_shape: [3, 128, 128]

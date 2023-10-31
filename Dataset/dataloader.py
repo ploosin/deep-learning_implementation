@@ -111,15 +111,15 @@ class CelebADataset(Dataset):
     
     def preprocess(self):
         lines = [line.rstrip() for line in open(self.attr_path, 'r')]
-        attr_names = lines[1].split()
-        for i, attr_name in enumerate(attr_names):
+        attr_names = lines[0].split(',')
+        for i, attr_name in enumerate(attr_names[1:]):
             self.attr2idx[attr_name] = i
             self.idx2attr[i] = attr_name
-        lines = lines[2:]
+        lines = lines[1:]
         random.seed(0)
         random.shuffle(lines)
         for i, line in enumerate(lines):
-            split = line.split()
+            split = line.split(',')
             fname = split[0]
             attrs = split[1:]
             label = []

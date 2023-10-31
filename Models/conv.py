@@ -59,10 +59,12 @@ class DeConvLayer(nn.Module):
 
 class ResidualBlock(nn.Module):
     def __init__(self, input_channel, output_channel, kernel_size=3, stride=1, padding=1, batch_norm=True, instance_norm=False, activation='', bias=True) -> None:
-        super(ConvLayer, self).__init__()
+        super(ResidualBlock, self).__init__()
 
-        self.layers = ConvLayer(  input_channel,  output_channel, kernel_size, stride, padding, batch_norm, instance_norm, activation, bias=bias) + \
-                        ConvLayer(output_channel, output_channel, kernel_size, stride, padding, batch_norm, instance_norm, bias=bias)
+        self.conv1 = ConvLayer(input_channel,  output_channel, kernel_size, stride, padding, batch_norm, instance_norm, activation, bias=bias)
+        self.conv2 = ConvLayer(output_channel, output_channel, kernel_size, stride, padding, batch_norm, instance_norm, bias=bias)
         
     def forward(self, x):
-        return x + self.layers(x)
+        y = self.conv1(x)
+        y = self.conv2(y)
+        return x + y

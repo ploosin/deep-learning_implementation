@@ -34,9 +34,9 @@ class BaseModel(nn.Module, metaclass=ABCMeta):
     def print(self, s):
         self.log.info(s)
     
-    def print(self, curr_step, total_step, losses):
+    def print(self, curr_step, total_step, losses={}):
         log = f"Iter [{curr_step}/{total_step}] Loss: "
-        for name, loss in losses.item():
-            log += f"{name}: {loss:.4f} "
+        for name, loss in losses.items():
+            log += f"{name}: {loss:10.4f} "
         self.log.info(log)
     

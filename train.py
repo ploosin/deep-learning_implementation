@@ -1,6 +1,7 @@
 import yaml
 import argparse
 from easydict import EasyDict
+from multiprocessing import freeze_support
 
 from Dataset.dataloader import BasicLoader
 from Dataset.processing import set_image_processing
@@ -42,4 +43,6 @@ def main():
     # model = torch.compile(model)
     model.train(train_loader)
 
-main()
+if __name__ == '__main__':
+    freeze_support()
+    main()

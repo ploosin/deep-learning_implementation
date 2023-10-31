@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
 from torchvision import models, utils
+from torchsummary import summary
 import torchvision as tcvs
 from matplotlib import pyplot as plt
 
@@ -65,16 +66,16 @@ class Discriminator(nn.Module):
     def __init__(self, img_size=128, input_channel=5, hidden_channel=64):
         super(Discriminator, self).__init__()
         
-        self.conv1 = ConvLayer(                3,  hidden_channel* 1, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
-        self.conv2 = ConvLayer(hidden_channel* 1,  hidden_channel* 2, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
-        self.conv3 = ConvLayer(hidden_channel* 2,  hidden_channel* 4, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
-        self.conv4 = ConvLayer(hidden_channel* 4,  hidden_channel* 8, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
-        self.conv5 = ConvLayer(hidden_channel* 8,  hidden_channel*16, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
-        self.conv6 = ConvLayer(hidden_channel*16,  hidden_channel*32, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)
+        self.conv1 = ConvLayer(                3,  hidden_channel* 1, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B,   64, 64, 64]
+        self.conv2 = ConvLayer(hidden_channel* 1,  hidden_channel* 2, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B,  128, 32, 32]
+        self.conv3 = ConvLayer(hidden_channel* 2,  hidden_channel* 4, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B,  256, 16, 16]
+        self.conv4 = ConvLayer(hidden_channel* 4,  hidden_channel* 8, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B,  512,  8,  8]
+        self.conv5 = ConvLayer(hidden_channel* 8,  hidden_channel*16, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B, 1024,  4,  4]
+        self.conv6 = ConvLayer(hidden_channel*16,  hidden_channel*32, 4, 2, 1, batch_norm=False, activation='lrelu', bias=False)    # [B, 2048,  2,  2]
 
-        kernel_size = int(img_size / np.power(2, 6))
-        self.gen = ConvLayer(hidden_channel*32,             1,           3, batch_norm=False, bias=False)
-        self.cls = ConvLayer(hidden_channel*32, input_channel, kernel_size, batch_norm=False, bias=False)
+        # kernel_size = int(img_size / np.power(2, 6))
+        self.gen = ConvLayer(hidden_channel*32,             1, 4, 1, 1, batch_norm=False, bias=False)   # [B, 1,  1,  1]
+        self.cls = ConvLayer(hidden_channel*32, input_channel, 4, 2, 1, batch_norm=False, bias=False)   # [B, 5,  1,  1]
 
     def forward(self, x):
         x = self.conv1(x)
@@ -143,7 +144,7 @@ class StarGANv1(BaseModel):
 
         celeba_iter  = iter(data_loader)
         fixed_image, fixed_label = next(celeba_iter)
-        fixed_image.to(self.device)
+        fixed_image = fixed_image.to(self.device)
 
         for step in tqdm(range(self.cfg.iteration)):
             try:
@@ -166,7 +167,7 @@ class StarGANv1(BaseModel):
             label_trg = label_trg.to(self.device)
 
             # Train Discriminator
-            ## compute loss with real images 
+            ## compute loss with real images
             src, cls    = self.discriminator(real_x)
             loss_d_real = -torch.mean(src)
             loss_d_cls  = F.binary_cross_entropy_with_logits(cls, label_org)
@@ -180,7 +181,7 @@ class StarGANv1(BaseModel):
             alpha     = torch.rand(batch, 1, 1, 1).to(self.device)
             x_hat     = (alpha * real_x.data + (1-alpha) * fake_x.data).requires_grad_(True)
             src, _    = self.discriminator(x_hat)
-            loss_d_gp = gradient_penalty(src, x_hat)
+            loss_d_gp = gradient_penalty(src, x_hat, device=self.device)
 
             ## backward and optimize
             loss_d = loss_d_real + loss_d_fake + 1.0 * loss_d_cls + 10.0 * loss_d_gp
@@ -222,21 +223,22 @@ class StarGANv1(BaseModel):
                 self.print(step+1, self.cfg.iteration, losses)
 
                 # visualize
-                fixed_label_list = self.create_labels(fixed_label, 5, selected_attrs=self.cfg.Data.selected_attrs)
+                with torch.no_grad():
+                    fixed_label_list = self.create_labels(fixed_label, 5, selected_attrs=self.cfg.Data.selected_attrs)
 
-                ## Translate images
-                fake_x_list = [fixed_image]
-                for fl in fixed_label_list:
-                    fake_x_list.append(self.generator(fixed_image, fl))
+                    ## Translate images
+                    fake_x_list = [fixed_image]
+                    for fl in fixed_label_list:
+                        fake_x_list.append(self.generator(fixed_image, fl))
 
-                ## Save image
-                img_path = os.path.join(self.save_image_dir, f'{step+1}.png')
-                img_conc = torch.cat(fake_x_list, dim=3)
-                grid = tcvs.utils.make_grid(self.cfg.denormalize(img_conc.data.cpu()), nrow=1, padding=0)
-                
-                plt.figure(figsize=(10, 20))
-                plt.imshow(grid.permute(1, 2, 0))
-                plt.savefig(img_path)
+                    ## Save image
+                    img_path = os.path.join(self.save_image_dir, f'{step+1}.png')
+                    img_conc = torch.cat(fake_x_list, dim=3)
+                    grid = tcvs.utils.make_grid(self.cfg.denormalize(img_conc.data.cpu()), nrow=1, padding=0)
+                    
+                    plt.figure(figsize=(10, 20))
+                    plt.imshow(grid.permute(1, 2, 0))
+                    plt.savefig(img_path)
 
 
             if (step+1) % self.cfg.save_interval_step == 0:
